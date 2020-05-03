@@ -31,7 +31,7 @@ def get_tariff():
     response = rtu.send_message(message, serial_port)
     tariff = ["-", "high", "low"]
     print(response)
-    return tariff[response[0]]
+    return {"tariff" : tariff[response[0]]}
 
 # MODBUS serial RTU
 serial_port = Serial(port='/dev/ttyUSB0', baudrate=9600, parity=PARITY_EVEN, stopbits=1, bytesize=8, timeout=1)
@@ -42,7 +42,7 @@ mqttc = paho.mqtt.client.Client()
 mqttc.connect(mqtt_host_local, 1883, 60)
 
 # InfluxDB
-influx = InfluxDBClient(host='192.168.1.112', port=8086)
+influx = InfluxDBClient(host='localhost', port=8086)
 print(influx.get_list_database())
 influx.switch_database('electricity')
 
@@ -55,17 +55,15 @@ while once:
 
     mqttc.publish("electricity/power", json.dumps(power_values))
     mqttc.publish("electricity/energy", json.dumps(energy_values))
-    mqttc.publish("electricity/tariff", tariff)
+    mqttc.publish("electricity/tariff", json.dumps(tariff))
 
     metrics = {}
     metrics["measurement"] = "power"
-    metrics["fields"] = json.dumps(power_values)
-    influx.write_points(metrics)
+    metrics["tags"] = {"tag": "test"}
+    metrics["fields"] = {**power_values, **energy_values, **tariff}
+    influx.write_points([metrics])
 
-    #influx.write_points(json.dumps(power_values), database = 'electricity')
-
-    once = False
-
-    time.sleep(1)
+    #once = False
+    time.sleep(10)
 
 serial_port.close()
