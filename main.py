@@ -29,23 +29,29 @@ def get_data(start = 0x4000, length = 0x02):
 def get_tariff():
     message = rtu.read_holding_registers(slave_id = 1, starting_address = 0x6048, quantity = 1)
     response = rtu.send_message(message, serial_port)
-    tariff = ["-", "high", "low"]
+    tariff = [-1, 1, 0]
     print(response)
-    return {"tariff" : tariff[response[0]]}
+    return {"tariff_val" : tariff[response[0]]}
 
 # MODBUS serial RTU
-serial_port = Serial(port='/dev/ttyUSB0', baudrate=9600, parity=PARITY_EVEN, stopbits=1, bytesize=8, timeout=1)
+serial_port = Serial(port='/dev/ttyUSB485', baudrate=9600, parity=PARITY_EVEN, stopbits=1, bytesize=8, timeout=1)
+
+print("Serial port connected")
 
 # MQTT
-mqtt_host_local = "localhost"
+mqtt_host_local = "192.168.1.112"
 mqttc = paho.mqtt.client.Client()
 mqttc.connect(mqtt_host_local, 1883, 60)
 
+print("MQTT Connected")
+
 # InfluxDB
-influx = InfluxDBClient(host='localhost', port=8086)
+influx = InfluxDBClient(host='192.168.1.112', port=8086)
+print("InfluxDBclinet")
 print(influx.get_list_database())
 influx.switch_database('electricity')
 
+print("Influx connected")
 
 once = True
 while once:
@@ -64,6 +70,6 @@ while once:
     influx.write_points([metrics])
 
     #once = False
-    time.sleep(10)
+    time.sleep(30)
 
 serial_port.close()
