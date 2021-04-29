@@ -54,6 +54,7 @@ influx.switch_database('electricity')
 print("Influx connected")
 
 once = True
+counter = 0
 while once:
     power_values = get_data(start = 0x5000, length = 0x32)
     energy_values = get_data(start = 0x6000, length = 0x3c)
@@ -63,13 +64,17 @@ while once:
     mqttc.publish("electricity/energy", json.dumps(energy_values))
     mqttc.publish("electricity/tariff", json.dumps(tariff))
 
-    metrics = {}
-    metrics["measurement"] = "power"
-    metrics["tags"] = {"tag": "test"}
-    metrics["fields"] = {**power_values, **energy_values, **tariff}
-    influx.write_points([metrics])
+    if counter % 30 == 0:
+        metrics = {}
+        metrics["measurement"] = "power"
+        metrics["tags"] = {"tag": "test"}
+        metrics["fields"] = {**power_values, **energy_values, **tariff}
+        influx.write_points([metrics])
+        print("influx")
 
     #once = False
-    time.sleep(30)
+    print("counter", counter, " modulo", counter % 30)
+    counter += 1
+    time.sleep(1)
 
 serial_port.close()
