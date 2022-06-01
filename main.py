@@ -42,6 +42,7 @@ print("Serial port connected")
 mqtt_host_local = "192.168.1.112"
 mqttc = paho.mqtt.client.Client()
 mqttc.connect(mqtt_host_local, 1883, 60)
+mqttc.loop_start()
 
 print("MQTT Connected")
 
