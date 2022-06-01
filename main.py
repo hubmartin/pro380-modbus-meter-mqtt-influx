@@ -69,7 +69,23 @@ while once:
         metrics = {}
         metrics["measurement"] = "power"
         metrics["tags"] = {"tag": "test"}
-        metrics["fields"] = {**power_values, **energy_values, **tariff}
+        print(power_values)
+
+        #metrics["fields"] = {**power_values, **energy_values, **tariff}
+
+        # Append only specific values
+        metrics["fields"] = {'5012': power_values['5012'],
+                            '5014': power_values['5014'],
+                            '5016': power_values['5016'],
+                            '5018': power_values['5018'],
+
+                            '6000': energy_values['6000'],
+                            '6002': energy_values['6002'],
+                            '6004': energy_values['6004'],
+
+                            'tariff_val': tariff['tariff_val']
+                            }
+
         influx.write_points([metrics])
         print("influx")
 
