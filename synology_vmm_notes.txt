@@ -1,0 +1,44 @@
+
+Rpi
+pm2 start `which python3.5` --name "electricity" --restart-delay=5000 -- /home/pi/pro380-modbus-meter-mqtt-influx/main.py
+
+pm2 start `which python3` --name "electricity" --restart-delay=5000 -- /home/martin/pro380-modbus-meter-mqtt-influx/main.py
+pm2 save
+
+usb.xml
+
+<hostdev mode="subsystem" type="usb">
+    <source>
+        <vendor id="0x0403"/>
+        <product id="0x6001"/>
+    </source>
+</hostdev>
+
+sudo vim /etc/rc
+
+Add this line at the end before "exit 0"
+
+virsh attach-device 6d6d62df-8c6c-45aa-8e5e-0d7585e97c0d /etc/usb.xml 
+
+virsh detach-device 6d6d62df-8c6c-45aa-8e5e-0d7585e97c0d /etc/usb.xml 
+
+
+Maybe udev rules would be better
+created /lib/udev/rules.d/50-usb-zwave.rules with the following:
+SUBSYSTEM==“tty”, ATTRS{idVendor}==“0658”, ATTRS{idProduct}==“0200”, SYMLINK+=“USBzwave”, GROUP=“homeautomation”, MODE=“0666”
+
+
+ACTION=="add", SUBSYSTEM=="usb", ENV{PRODUCT}=="403/6001/600", RUN+="virsh attach-device 6d6d62df-8c6c-45aa-8e5e-0d7585e97c0d /etc/usb.xml"
+ACTION=="remove", SUBSYSTEM=="usb", ENV{PRODUCT}=="403/6001/600", RUN+="virsh detach-device 6d6d62df-8c6c-45aa-8e5e-0d7585e97c0d /etc/usb.xml"
+
+
+
+ACTION=="remove", \
+    SUBSYSTEM=="usb", \
+    ENV{ID_VENDOR_ID}=="0403", \
+    ENV{ID_MODEL_ID}=="6001", \
+    RUN+="/usr/bin/virsh detach-device 6d6d62df-8c6c-45aa-8e5e-0d7585e97c0d /etc/usb.xml"
+
+    reload rules
+
+    sudo udevadm control -R
