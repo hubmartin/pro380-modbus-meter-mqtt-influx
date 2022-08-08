@@ -83,6 +83,9 @@ while once:
                             '6002': energy_values['6002'],
                             '6004': energy_values['6004'],
 
+                            '6018': energy_values['6018'],
+                            '603c': energy_values['603c'],
+
                             'tariff_val': tariff['tariff_val']
                             }
 
